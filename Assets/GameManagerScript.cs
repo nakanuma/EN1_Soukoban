@@ -12,6 +12,7 @@ public class GameManagerScript : MonoBehaviour
     public GameObject goalPrefab;
     public GameObject clearText;
     public GameObject particlePrefab;
+    public GameObject wallPrefab;
     // 配列の宣言
     int[,] map;
     // ゲーム管理用の配列
@@ -53,6 +54,12 @@ public class GameManagerScript : MonoBehaviour
         //  移動先が範囲外なら移動不可
         if (moveTo.y < 0 || moveTo.y >= field.GetLength(0)) { return false; }
         if (moveTo.x < 0 || moveTo.x >= field.GetLength(1)) { return false; }
+
+        // Wallタグを持っていたら動かないようにする
+        if (field[moveTo.y, moveTo.x] != null && field[moveTo.y, moveTo.x].tag == "Wall")
+        {
+            return false;
+        }
 
         // Boxタグを持っていたら再帰処理
         if (field[moveTo.y, moveTo.x] != null && field[moveTo.y, moveTo.x].tag == "Box")
@@ -126,13 +133,13 @@ public class GameManagerScript : MonoBehaviour
 
         map = new int[,]
         {
-            {0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0},
-            {0,0,3,0,3,0,0},
-            {0,0,0,1,0,0,0},
-            {0,0,0,2,0,0,0},
-            {0,0,2,3,2,0,0},
-            {0,0,0,0,0,0,0},
+            {6,6,6,6,6,6,6},
+            {6,0,0,0,0,0,6},
+            {6,0,3,0,3,0,6},
+            {6,0,0,1,0,0,6},
+            {6,0,0,2,0,0,6},
+            {6,0,2,3,2,0,6},
+            {6,6,6,6,6,6,6},
         };
         field = new GameObject
         [
@@ -168,6 +175,15 @@ public class GameManagerScript : MonoBehaviour
                     field[y, x] = Instantiate(
                         goalPrefab,
                         new Vector3(x, map.GetLength(0) - y, 0.01f), // プレイヤーと重ならないように少しだけZ座標を奥に設定
+                        Quaternion.identity
+                        );
+                }
+                // wallPrefabの実体化
+                if (map[y, x] == 6)
+                {
+                    field[y, x] = Instantiate(
+                        wallPrefab,
+                        new Vector3(x, map.GetLength(0) - y, 0),
                         Quaternion.identity
                         );
                 }
