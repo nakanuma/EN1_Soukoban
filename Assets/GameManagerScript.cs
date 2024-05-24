@@ -126,6 +126,58 @@ public class GameManagerScript : MonoBehaviour
         return true;
     }
 
+    void ResetGame()
+    {
+        // すべてのオブジェクトを削除する
+        foreach (GameObject obj in field)
+        {
+            if (obj != null)
+            {
+                Destroy(obj);
+            }
+        }
+
+        // 新しいマップを作成し、各オブジェクトをその位置に配置する
+         map = new int[,]
+        {
+            {6,6,6,6,6,6,6,6,6},
+            {6,0,0,0,0,0,0,0,6},
+            {6,0,0,0,0,0,0,0,6},
+            {6,0,0,3,0,3,0,0,6},
+            {6,0,0,0,1,0,0,0,6},
+            {6,0,0,0,2,0,0,0,6},
+            {6,0,0,2,3,2,0,0,6},
+            {6,0,0,0,0,0,0,0,6},
+            {6,6,6,6,6,6,6,6,6},
+        };
+
+        field = new GameObject[map.GetLength(0), map.GetLength(1)];
+
+        for (int y = 0; y < map.GetLength(0); y++)
+        {
+            for (int x = 0; x < map.GetLength(1); x++)
+            {
+                // 各オブジェクトを配置する
+                if (map[y, x] == 1)
+                {
+                    field[y, x] = Instantiate(playerPrefab, new Vector3(x, map.GetLength(0) - y, 0), Quaternion.identity);
+                }
+                else if (map[y, x] == 2)
+                {
+                    field[y, x] = Instantiate(boxPrefab, new Vector3(x, map.GetLength(0) - y, 0), Quaternion.identity);
+                }
+                else if (map[y, x] == 3)
+                {
+                    field[y, x] = Instantiate(goalPrefab, new Vector3(x, map.GetLength(0) - y, 0.01f), Quaternion.identity);
+                }
+                else if (map[y, x] == 6)
+                {
+                    field[y, x] = Instantiate(wallPrefab, new Vector3(x, map.GetLength(0) - y, 0), Quaternion.identity);
+                }
+            }
+        }
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -133,13 +185,15 @@ public class GameManagerScript : MonoBehaviour
 
         map = new int[,]
         {
-            {6,6,6,6,6,6,6},
-            {6,0,0,0,0,0,6},
-            {6,0,3,0,3,0,6},
-            {6,0,0,1,0,0,6},
-            {6,0,0,2,0,0,6},
-            {6,0,2,3,2,0,6},
-            {6,6,6,6,6,6,6},
+            {6,6,6,6,6,6,6,6,6},
+            {6,0,0,0,0,0,0,0,6},
+            {6,0,0,0,0,0,0,0,6},
+            {6,0,0,3,0,3,0,0,6},
+            {6,0,0,0,1,0,0,0,6},
+            {6,0,0,0,2,0,0,0,6},
+            {6,0,0,2,3,2,0,0,6},
+            {6,0,0,0,0,0,0,0,6},
+            {6,6,6,6,6,6,6,6,6},
         };
         field = new GameObject
         [
@@ -236,8 +290,14 @@ public class GameManagerScript : MonoBehaviour
             //PrintArray();
         }
 
-        //もしクリアしていたら
-        if (IsCleard())
+        // ステージリセット
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            ResetGame();
+        }
+
+            //もしクリアしていたら
+            if (IsCleard())
         {
             // ゲームオブジェクトのSetActiveメソッドを使い有効化
             clearText.SetActive(true);
