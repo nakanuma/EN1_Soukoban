@@ -13,8 +13,14 @@ public class GameManagerScript : MonoBehaviour
     public GameObject clearText;
     public GameObject particlePrefab;
     public GameObject wallPrefab;
+    public GameObject nextText;
     // 配列の宣言
     int[,] map;
+    int[,] stage0;
+    int[,] stage1;
+    int[,] stage2;
+    // 現在のステージ
+    int currentStage = 0;
     // ゲーム管理用の配列
     GameObject[,] field;
 
@@ -99,12 +105,12 @@ public class GameManagerScript : MonoBehaviour
         // 可変長配列の作成
         List<Vector2Int> goals = new List<Vector2Int>();
 
-        for(int y = 0; y < map.GetLength(0); y++)
+        for (int y = 0; y < map.GetLength(0); y++)
         {
             for (int x = 0; x < map.GetLength(1); x++)
             {
                 // 格納場所か否かを判断
-                if (map[y,x] == 3)
+                if (map[y, x] == 3)
                 {
                     // 格納場所のインデックスを控えておく
                     goals.Add(new Vector2Int(x, y));
@@ -113,10 +119,10 @@ public class GameManagerScript : MonoBehaviour
         }
 
         // 要素数はgoals.Countで取得
-        for(int i = 0; i < goals.Count; i++)
+        for (int i = 0; i < goals.Count; i++)
         {
             GameObject f = field[goals[i].y, goals[i].x];
-            if(f == null || f.tag != "Box")
+            if (f == null || f.tag != "Box")
             {
                 // 一つでも箱がなかったら条件未達成
                 return false;
@@ -138,18 +144,18 @@ public class GameManagerScript : MonoBehaviour
         }
 
         // 新しいマップを作成し、各オブジェクトをその位置に配置する
-         map = new int[,]
+        if (currentStage == 0)
         {
-            {6,6,6,6,6,6,6,6,6},
-            {6,0,0,0,0,0,0,0,6},
-            {6,0,0,0,0,0,0,0,6},
-            {6,0,0,3,0,3,0,0,6},
-            {6,0,0,0,1,0,0,0,6},
-            {6,0,0,0,2,0,0,0,6},
-            {6,0,0,2,3,2,0,0,6},
-            {6,0,0,0,0,0,0,0,6},
-            {6,6,6,6,6,6,6,6,6},
-        };
+            map = stage0;
+        }
+        else if (currentStage == 1)
+        {
+            map = stage1;
+        }
+        else if (currentStage == 2)
+        {
+            map = stage2;
+        }
 
         field = new GameObject[map.GetLength(0), map.GetLength(1)];
 
@@ -183,18 +189,60 @@ public class GameManagerScript : MonoBehaviour
     {
         Screen.SetResolution(1280, 720, false);
 
-        map = new int[,]
+        // ステージ0
+        stage0 = new int[,]
         {
             {6,6,6,6,6,6,6,6,6},
-            {6,0,0,0,0,0,0,0,6},
-            {6,0,0,0,0,0,0,0,6},
-            {6,0,0,3,0,3,0,0,6},
-            {6,0,0,0,1,0,0,0,6},
+            {6,6,0,0,0,0,0,6,6},
+            {6,0,3,0,0,0,3,0,6},
             {6,0,0,0,2,0,0,0,6},
-            {6,0,0,2,3,2,0,0,6},
+            {6,0,0,2,1,2,0,0,6},
             {6,0,0,0,0,0,0,0,6},
+            {6,0,0,0,0,0,0,0,6},
+            {6,6,0,0,3,0,0,6,6},
             {6,6,6,6,6,6,6,6,6},
         };
+        // ステージ1
+        stage1 = new int[,]
+        {
+            {6,6,6,6,6,6,6,6,6},
+            {6,3,0,0,0,0,0,3,6},
+            {6,6,6,0,0,0,6,6,6},
+            {6,6,0,0,2,0,0,6,6},
+            {6,6,0,2,1,2,0,6,6},
+            {6,0,0,0,0,0,6,6,6},
+            {6,0,0,0,0,6,6,6,6},
+            {6,3,6,6,6,6,6,6,6},
+            {6,6,6,6,6,6,6,6,6},
+        };
+        // ステージ2
+        stage2 = new int[,]
+        {
+            {6,6,6,6,6,6,6,6,6},
+            {6,6,6,6,6,6,6,6,6},
+            {6,6,6,6,6,6,6,6,6},
+            {6,6,6,0,0,0,0,0,6},
+            {6,6,0,0,1,0,2,0,6},
+            {6,6,0,0,0,0,2,0,6},
+            {6,6,0,0,6,0,2,3,6},
+            {6,6,6,0,3,0,3,6,6},
+            {6,6,6,6,6,6,6,6,6},
+        };
+
+        // 現在のステージを設定
+        if (currentStage == 0)
+        {
+            map = stage0;
+        }
+        else if (currentStage == 1)
+        {
+            map = stage1;
+        }
+        else if (currentStage == 2)
+        {
+            map = stage2;
+        }
+
         field = new GameObject
         [
             map.GetLength(0),
@@ -215,7 +263,7 @@ public class GameManagerScript : MonoBehaviour
                         );
                 }
                 // boxPrefabの実体化
-                if (map[y,x] == 2)
+                if (map[y, x] == 2)
                 {
                     field[y, x] = Instantiate(
                         boxPrefab,
@@ -249,58 +297,75 @@ public class GameManagerScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // 右移動
-        if (Input.GetKeyDown(KeyCode.RightArrow))
+        // クリア画面では移動とリセットが行えないようにする
+        if (!IsCleard())
         {
-            // メソッド化した処理を使用
-            Vector2Int playerIndex = GetPlayerIndex();
+            // 右移動
+            if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                // メソッド化した処理を使用
+                Vector2Int playerIndex = GetPlayerIndex();
 
-            // 移動処理を関数化
-            MoveNumber(playerIndex, playerIndex + new Vector2Int(1, 0));
-            //PrintArray();
+                // 移動処理を関数化
+                MoveNumber(playerIndex, playerIndex + new Vector2Int(1, 0));
+                //PrintArray();
+            }
+
+            // 左移動
+            if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                Vector2Int playerIndex = GetPlayerIndex();
+
+                // 移動処理を関数化
+                MoveNumber(playerIndex, playerIndex + new Vector2Int(-1, 0));
+                //PrintArray();
+            }
+
+            // 上移動
+            if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                Vector2Int playerIndex = GetPlayerIndex();
+
+                // 移動処理を関数化
+                MoveNumber(playerIndex, playerIndex + new Vector2Int(0, -1));
+                //PrintArray();
+            }
+
+            // 下移動
+            if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                Vector2Int playerIndex = GetPlayerIndex();
+
+                // 移動処理を関数化
+                MoveNumber(playerIndex, playerIndex + new Vector2Int(0, 1));
+                //PrintArray();
+            }
+
+            // ステージリセット
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                ResetGame();
+            }
         }
 
-        // 左移動
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            Vector2Int playerIndex = GetPlayerIndex();
-
-            // 移動処理を関数化
-            MoveNumber(playerIndex, playerIndex + new Vector2Int(-1, 0));
-            //PrintArray();
-        }
-
-        // 上移動
-        if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            Vector2Int playerIndex = GetPlayerIndex();
-
-            // 移動処理を関数化
-            MoveNumber(playerIndex, playerIndex + new Vector2Int(0, -1));
-            //PrintArray();
-        }
-
-        // 下移動
-        if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            Vector2Int playerIndex = GetPlayerIndex();
-
-            // 移動処理を関数化
-            MoveNumber(playerIndex, playerIndex + new Vector2Int(0, 1));
-            //PrintArray();
-        }
-
-        // ステージリセット
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            ResetGame();
-        }
-
-            //もしクリアしていたら
-            if (IsCleard())
+        //もしクリアしていたら
+        if (IsCleard())
         {
             // ゲームオブジェクトのSetActiveメソッドを使い有効化
             clearText.SetActive(true);
+            nextText.SetActive(true);
+
+            // キー入力で次のステージへ
+            if (Input.GetKeyDown(KeyCode.Return))
+            {
+                clearText.SetActive(false); // クリアテキストを消す
+                nextText.SetActive(false);
+                if (currentStage <= 3)
+                {
+                    currentStage += 1; // 次のステージへ
+                }
+                ResetGame(); // ステージのリセット
+            }
         }
     }
 }
