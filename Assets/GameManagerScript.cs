@@ -23,6 +23,8 @@ public class GameManagerScript : MonoBehaviour
     int currentStage = 0;
     // ゲーム管理用の配列
     GameObject[,] field;
+    AudioSource audioSource;
+    bool hasPlayedClearSound = false; // クリア時の効果音が再生されたかどうかのフラグ
 
     void PrintArray()
     {
@@ -188,7 +190,7 @@ public class GameManagerScript : MonoBehaviour
     void Start()
     {
         Screen.SetResolution(1280, 720, false);
-
+        audioSource = GetComponent<AudioSource>();
         // ステージ0
         stage0 = new int[,]
         {
@@ -305,7 +307,6 @@ public class GameManagerScript : MonoBehaviour
             {
                 // メソッド化した処理を使用
                 Vector2Int playerIndex = GetPlayerIndex();
-
                 // 移動処理を関数化
                 MoveNumber(playerIndex, playerIndex + new Vector2Int(1, 0));
                 //PrintArray();
@@ -351,6 +352,11 @@ public class GameManagerScript : MonoBehaviour
         //もしクリアしていたら
         if (IsCleard())
         {
+            if (!hasPlayedClearSound) // クリア時の効果音がまだ再生されていない場合
+            {
+                audioSource.PlayOneShot(audioSource.clip); // 効果音を再生
+                hasPlayedClearSound = true; // フラグを設定して再生されたことを記録する
+            }
             // ゲームオブジェクトのSetActiveメソッドを使い有効化
             clearText.SetActive(true);
             nextText.SetActive(true);
@@ -365,6 +371,7 @@ public class GameManagerScript : MonoBehaviour
                     currentStage += 1; // 次のステージへ
                 }
                 ResetGame(); // ステージのリセット
+                hasPlayedClearSound = false; // リセット後にフラグをリセットする
             }
         }
     }
