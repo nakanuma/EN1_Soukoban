@@ -23,6 +23,10 @@ public class GameManagerScript : MonoBehaviour
     int currentStage = 0;
     // ゲーム管理用の配列
     GameObject[,] field;
+
+    public AudioClip sound1;
+    public AudioClip sound2;
+
     AudioSource audioSource;
     bool hasPlayedClearSound = false; // クリア時の効果音が再生されたかどうかのフラグ
 
@@ -305,6 +309,8 @@ public class GameManagerScript : MonoBehaviour
             // 右移動
             if (Input.GetKeyDown(KeyCode.RightArrow))
             {
+                // 移動時の効果音を再生
+                audioSource.PlayOneShot(sound1);
                 // メソッド化した処理を使用
                 Vector2Int playerIndex = GetPlayerIndex();
                 // 移動処理を関数化
@@ -315,6 +321,8 @@ public class GameManagerScript : MonoBehaviour
             // 左移動
             if (Input.GetKeyDown(KeyCode.LeftArrow))
             {
+                // 移動時の効果音を再生
+                audioSource.PlayOneShot(sound1);
                 Vector2Int playerIndex = GetPlayerIndex();
 
                 // 移動処理を関数化
@@ -325,6 +333,8 @@ public class GameManagerScript : MonoBehaviour
             // 上移動
             if (Input.GetKeyDown(KeyCode.UpArrow))
             {
+                // 移動時の効果音を再生
+                audioSource.PlayOneShot(sound1);
                 Vector2Int playerIndex = GetPlayerIndex();
 
                 // 移動処理を関数化
@@ -335,6 +345,8 @@ public class GameManagerScript : MonoBehaviour
             // 下移動
             if (Input.GetKeyDown(KeyCode.DownArrow))
             {
+                // 移動時の効果音を再生
+                audioSource.PlayOneShot(sound1);
                 Vector2Int playerIndex = GetPlayerIndex();
 
                 // 移動処理を関数化
@@ -345,6 +357,7 @@ public class GameManagerScript : MonoBehaviour
             // ステージリセット
             if (Input.GetKeyDown(KeyCode.R))
             {
+                audioSource.PlayOneShot(sound2); // 効果音を再生
                 ResetGame();
             }
         }
